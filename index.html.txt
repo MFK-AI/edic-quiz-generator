@@ -1,0 +1,1808 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EDIC Quiz Generator - Professional Medical MCQ Application</title>
+    <!-- PDF.js for real PDF text extraction -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <style>
+        /* Import Inter font */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
+        :root {
+            --color-primary-blue: #1e3a8a;
+            --color-primary-teal: #0d9488;
+            --color-white: #ffffff;
+            --color-background: #f8fafc;
+            --color-success: #10b981;
+            --color-error: #ef4444;
+            --color-warning: #f59e0b;
+            --color-neutral: #64748b;
+            --color-easy: #10b981;
+            --color-moderate: #f59e0b;
+            --color-hard: #ef4444;
+            --gradient-header: linear-gradient(135deg, #1e3a8a 0%, #0d9488 100%);
+            --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+            --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            line-height: 1.6;
+            color: #1e293b;
+            background: linear-gradient(135deg, #f8fafc 0%, #e0f2fe 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(40px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .animate-fade-in { animation: fadeIn 0.6s ease-out; }
+        .animate-slide-up { animation: slideUp 0.6s ease-out; }
+        .animate-pulse { animation: pulse 2s ease-in-out infinite; }
+        .animate-float { animation: float 3s ease-in-out infinite; }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: var(--shadow-lg);
+            border-radius: 1rem;
+        }
+
+        .app-header {
+            text-align: center;
+            padding: 3rem 2rem;
+            background: var(--gradient-header);
+            color: white;
+            border-radius: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .app-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .app-subtitle {
+            font-size: 1.125rem;
+            opacity: 0.95;
+        }
+
+        .upload-section {
+            text-align: center;
+            padding: 3rem 2rem;
+        }
+
+        .dropzone {
+            border: 3px dashed var(--color-primary-teal);
+            border-radius: 1rem;
+            padding: 3rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(13, 148, 136, 0.05);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .dropzone:hover {
+            background: rgba(13, 148, 136, 0.1);
+            transform: scale(1.02);
+        }
+
+        .dropzone.dragover {
+            background: rgba(13, 148, 136, 0.15);
+            border-color: var(--color-success);
+        }
+
+        .dropzone.processing {
+            pointer-events: none;
+            opacity: 0.7;
+        }
+
+        .upload-icon {
+            font-size: 4rem;
+            color: var(--color-primary-teal);
+            margin-bottom: 1rem;
+        }
+
+        .file-input-hidden {
+            display: none;
+        }
+
+        .btn {
+            padding: 0.875rem 1.75rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background: var(--gradient-header);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: var(--color-primary-blue);
+            border: 2px solid var(--color-primary-blue);
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: var(--color-primary-blue);
+            color: white;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .feature-card {
+            padding: 2rem;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .feature-icon {
+            color: var(--color-primary-teal);
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .feature-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .difficulty-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .difficulty-card {
+            padding: 2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .difficulty-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .difficulty-card.selected {
+            border: 3px solid var(--color-primary-teal);
+            background: rgba(13, 148, 136, 0.05);
+        }
+
+        .recommended-badge {
+            position: absolute;
+            top: -12px;
+            right: 20px;
+            background: var(--color-warning);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .difficulty-breakdown {
+            margin: 1rem 0;
+        }
+
+        .breakdown-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin: 0.5rem 0;
+        }
+
+        .color-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .color-dot.easy { background: var(--color-easy); }
+        .color-dot.moderate { background: var(--color-moderate); }
+        .color-dot.hard { background: var(--color-hard); }
+
+        .question-card {
+            padding: 2rem;
+            margin: 2rem 0;
+        }
+
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .badge {
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .badge.easy { background: #d1fae5; color: #065f46; }
+        .badge.moderate { background: #fed7aa; color: #92400e; }
+        .badge.hard { background: #fecaca; color: #991b1b; }
+
+        .clinical-vignette {
+            background: #f1f5f9;
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            margin: 1.5rem 0;
+            border-left: 4px solid var(--color-primary-teal);
+        }
+
+        .question-stem {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin: 1.5rem 0;
+            color: var(--color-primary-blue);
+        }
+
+        .answer-options {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .option-button {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1.25rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 0.75rem;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: left;
+            width: 100%;
+        }
+
+        .option-button:hover:not(.disabled) {
+            border-color: var(--color-primary-teal);
+            background: #f0fdfa;
+            transform: translateX(5px);
+        }
+
+        .option-button.selected {
+            border-color: var(--color-primary-teal);
+            background: #ccfbf1;
+            font-weight: 600;
+        }
+
+        .option-button.correct {
+            border-color: var(--color-success);
+            background: #d1fae5;
+        }
+
+        .option-button.incorrect {
+            border-color: var(--color-error);
+            background: #fee2e2;
+        }
+
+        .option-button.disabled {
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        .option-letter {
+            font-weight: 700;
+            font-size: 1.125rem;
+            color: var(--color-primary-blue);
+            min-width: 30px;
+        }
+
+        .feedback-panel {
+            margin-top: 2rem;
+            padding: 2rem;
+            border-radius: 0.75rem;
+            animation: slideUp 0.4s ease-out;
+        }
+
+        .feedback-panel.correct {
+            background: #d1fae5;
+            border: 2px solid var(--color-success);
+        }
+
+        .feedback-panel.incorrect {
+            background: #fee2e2;
+            border: 2px solid var(--color-error);
+        }
+
+        .feedback-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .feedback-icon {
+            font-size: 2.5rem;
+        }
+
+        .feedback-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .explanation-section {
+            margin-top: 1.5rem;
+            padding: 1.5rem;
+            background: white;
+            border-radius: 0.75rem;
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 1rem;
+            overflow: hidden;
+            margin: 1rem 0;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: var(--gradient-header);
+            transition: width 0.4s ease;
+        }
+
+        .export-failed-section {
+            padding: 2rem;
+            margin: 2rem 0;
+            border: 2px solid var(--color-warning);
+        }
+
+        .export-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .btn-export-primary {
+            background: var(--color-warning);
+            color: white;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.125rem;
+            transition: all 0.3s ease;
+            margin: 1rem 0;
+        }
+
+        .btn-export-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .export-format-options {
+            display: flex;
+            gap: 1.5rem;
+            margin: 1rem 0;
+            flex-wrap: wrap;
+        }
+
+        .format-option {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            transition: background 0.2s;
+        }
+
+        .format-option:hover {
+            background: rgba(245, 158, 11, 0.1);
+        }
+
+        .format-option input[type="radio"] {
+            cursor: pointer;
+        }
+
+        .spinner {
+            border: 4px solid rgba(13, 148, 136, 0.1);
+            border-top-color: var(--color-primary-teal);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 2rem auto;
+        }
+
+        .spinner-small {
+            width: 20px;
+            height: 20px;
+            border-width: 2px;
+            display: inline-block;
+            margin: 0;
+            vertical-align: middle;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .error-message {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin: 1rem 0;
+            border-left: 4px solid var(--color-error);
+        }
+
+        .success-message {
+            background: #d1fae5;
+            color: #065f46;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin: 1rem 0;
+            border-left: 4px solid var(--color-success);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .stat-card {
+            padding: 1.5rem;
+            text-align: center;
+            background: white;
+            border-radius: 0.75rem;
+            border: 2px solid #e2e8f0;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--color-primary-blue);
+        }
+
+        .stat-label {
+            color: var(--color-neutral);
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+        }
+
+        .topic-tag {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            background: #e0f2fe;
+            color: var(--color-primary-blue);
+            border-radius: 1rem;
+            font-size: 0.875rem;
+            margin: 0.25rem;
+        }
+
+        @media (max-width: 768px) {
+            .app-title { font-size: 1.75rem; }
+            .container { padding: 1rem; }
+            .difficulty-grid,
+            .features-grid,
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            .question-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .review-list {
+            max-height: 400px;
+            overflow-y: auto;
+            margin: 1rem 0;
+        }
+
+        .review-item {
+            padding: 1rem;
+            border-bottom: 1px solid #e2e8f0;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .review-item:hover {
+            background: #f8fafc;
+        }
+
+        .review-item:last-child {
+            border-bottom: none;
+        }
+
+        .extraction-progress {
+            margin: 1rem 0;
+            padding: 1rem;
+            background: #f0fdfa;
+            border-radius: 0.5rem;
+            border: 1px solid var(--color-primary-teal);
+        }
+
+        .progress-text {
+            font-weight: 600;
+            color: var(--color-primary-teal);
+            margin-bottom: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="app-header animate-fade-in">
+            <h1 class="app-title">📚 EDIC Quiz Generator</h1>
+            <p class="app-subtitle">Professional MCQ Assessment from Your Study Materials</p>
+        </div>
+
+        <!-- Upload Screen -->
+        <div id="uploadScreen" class="upload-section glass-effect animate-slide-up">
+            <div class="dropzone" id="dropzone">
+                <div class="upload-icon animate-pulse" id="uploadIcon">☁️</div>
+                <h2 id="uploadTitle">Upload Study Material</h2>
+                <p id="uploadSubtitle">Drag & drop PDF file or click to browse</p>
+                <p style="font-size: 0.875rem; color: var(--color-neutral); margin-top: 0.5rem;">
+                    Supported: PDF • Max size: 50MB
+                </p>
+                <div id="extractionProgress" class="extraction-progress hidden">
+                    <div class="progress-text">📖 Extracting text from PDF...</div>
+                    <div class="progress-bar-container">
+                        <div id="extractionBar" class="progress-bar-fill" style="width: 0%;"></div>
+                    </div>
+                    <p id="extractionStatus" style="font-size: 0.875rem; color: var(--color-neutral); margin-top: 0.5rem;">
+                        Page 0 of 0
+                    </p>
+                </div>
+                <input type="file" id="fileInput" accept=".pdf" class="file-input-hidden">
+                <label for="fileInput" class="btn btn-primary" id="uploadBtn" style="margin-top: 1rem;">
+                    📄 Choose File
+                </label>
+            </div>
+
+            <div id="uploadError" class="error-message hidden"></div>
+
+            <div class="features-grid">
+                <div class="feature-card glass-effect">
+                    <div class="feature-icon">✓</div>
+                    <h3 class="feature-title">30 Unique Questions</h3>
+                    <p>Zero repetition guaranteed</p>
+                </div>
+                <div class="feature-card glass-effect">
+                    <div class="feature-icon">🧠</div>
+                    <h3 class="feature-title">EDIC Standard</h3>
+                    <p>Exam-authentic format (Type A & K)</p>
+                </div>
+                <div class="feature-card glass-effect">
+                    <div class="feature-icon">📖</div>
+                    <h3 class="feature-title">Detailed Explanations</h3>
+                    <p>Learn from every answer</p>
+                </div>
+                <div class="feature-card glass-effect">
+                    <div class="feature-icon">💾</div>
+                    <h3 class="feature-title">Export Failed Questions</h3>
+                    <p>Save incorrect answers for review</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Difficulty Selection Screen -->
+        <div id="difficultyScreen" class="hidden">
+            <div class="glass-effect animate-fade-in" style="padding: 2rem; margin-bottom: 2rem;">
+                <div style="text-align: center;">
+                    <div style="font-size: 3rem; color: var(--color-success);">✓</div>
+                    <h2>Study Material Analyzed</h2>
+                    <p id="fileName" style="font-weight: 600; margin: 0.5rem 0;"></p>
+                    <p id="pdfStats" style="color: var(--color-neutral); font-size: 0.875rem;"></p>
+                    <p style="color: var(--color-neutral); margin-top: 1rem;">Ready to generate 30 unique questions</p>
+                </div>
+            </div>
+
+            <h2 style="text-align: center; margin-bottom: 1.5rem;">Select Difficulty Level</h2>
+            
+            <div class="difficulty-grid">
+                <div class="difficulty-card glass-effect recommended" onclick="selectDifficulty('mixed')" id="card-mixed">
+                    <div class="recommended-badge">★ RECOMMENDED</div>
+                    <h3>Mixed Difficulty</h3>
+                    <p style="color: var(--color-neutral); margin: 0.5rem 0;">Exam-Realistic Distribution</p>
+                    <div class="difficulty-breakdown">
+                        <div class="breakdown-item">
+                            <div class="color-dot easy"></div>
+                            <span>6 Easy (20%)</span>
+                        </div>
+                        <div class="breakdown-item">
+                            <div class="color-dot moderate"></div>
+                            <span>15 Moderate (50%)</span>
+                        </div>
+                        <div class="breakdown-item">
+                            <div class="color-dot hard"></div>
+                            <span>9 Hard (30%)</span>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" style="width: 100%; margin-top: 1rem;">
+                        Select Mixed
+                    </button>
+                </div>
+
+                <div class="difficulty-card glass-effect" onclick="selectDifficulty('easy')" id="card-easy">
+                    <div style="font-size: 2.5rem; text-align: center; margin-bottom: 1rem;">😊</div>
+                    <h3>All Easy</h3>
+                    <p style="color: var(--color-neutral);">30 easy questions for foundational review</p>
+                    <button class="btn btn-secondary" style="width: 100%; margin-top: 1rem;">
+                        Select Easy
+                    </button>
+                </div>
+
+                <div class="difficulty-card glass-effect" onclick="selectDifficulty('moderate')" id="card-moderate">
+                    <div style="font-size: 2.5rem; text-align: center; margin-bottom: 1rem;">😐</div>
+                    <h3>All Moderate</h3>
+                    <p style="color: var(--color-neutral);">30 moderate questions for standard practice</p>
+                    <button class="btn btn-secondary" style="width: 100%; margin-top: 1rem;">
+                        Select Moderate
+                    </button>
+                </div>
+
+                <div class="difficulty-card glass-effect" onclick="selectDifficulty('hard')" id="card-hard">
+                    <div style="font-size: 2.5rem; text-align: center; margin-bottom: 1rem;">⚡</div>
+                    <h3>All Hard</h3>
+                    <p style="color: var(--color-neutral);">30 hard questions for advanced preparation</p>
+                    <button class="btn btn-secondary" style="width: 100%; margin-top: 1rem;">
+                        Select Hard
+                    </button>
+                </div>
+            </div>
+
+            <div style="text-align: center; margin-top: 2rem;">
+                <button class="btn btn-secondary" onclick="resetUpload()">
+                    ← Upload Different File
+                </button>
+            </div>
+        </div>
+
+        <!-- Loading Screen -->
+        <div id="loadingScreen" class="hidden" style="text-align: center; padding: 4rem;">
+            <div class="spinner"></div>
+            <h3>Generating Your Quiz...</h3>
+            <p id="loadingText">Analyzing study material and creating 30 unique questions</p>
+            <div class="progress-bar-container" style="max-width: 400px; margin: 2rem auto;">
+                <div id="generationBar" class="progress-bar-fill" style="width: 0%;"></div>
+            </div>
+        </div>
+
+        <!-- Quiz Screen -->
+        <div id="quizScreen" class="hidden">
+            <!-- Progress Bar -->
+            <div style="background: white; padding: 1rem; border-radius: 0.75rem; margin-bottom: 2rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                    <span style="font-weight: 600;">Question <span id="currentQ">1</span>/30</span>
+                    <span style="font-weight: 600;">Score: <span id="scoreDisplay">0</span>/30</span>
+                </div>
+                <div class="progress-bar-container">
+                    <div id="progressBar" class="progress-bar-fill" style="width: 3.33%;"></div>
+                </div>
+            </div>
+
+            <!-- Question Card -->
+            <div id="questionCard" class="question-card glass-effect">
+                <!-- Question content will be inserted here dynamically -->
+            </div>
+        </div>
+
+        <!-- Results Screen -->
+        <div id="resultsScreen" class="hidden"></div>
+    </div>
+
+    <script>
+        // Initialize PDF.js
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+        // Global State
+        let pdfText = '';
+        let fileName = '';
+        let difficulty = 'mixed';
+        let questions = [];
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let userAnswers = [];
+        let failedQuestions = [];
+        let extractedTextByPage = [];
+        let pdfMetadata = {};
+
+        // Comprehensive Question Bank (EDIC-style)
+        const questionBank = [
+            // Cardiovascular (20%)
+            {
+                id: 'cv1',
+                topic: 'Cardiovascular Disorders',
+                difficulty: 'Easy',
+                type: 'A',
+                vignette: 'A 68-year-old male is admitted with acute inferior STEMI. He develops hypotension (BP 85/50 mmHg), tachycardia (HR 110 bpm), and clear lung fields.',
+                questionText: 'What is the most likely cause of his hypotension?',
+                options: [
+                    { letter: 'A', text: 'Cardiogenic shock due to extensive RV infarction' },
+                    { letter: 'B', text: 'Hypovolemia from diaphoresis' },
+                    { letter: 'C', text: 'Septic shock from nosocomial infection' },
+                    { letter: 'D', text: 'Pulmonary embolism' },
+                    { letter: 'E', text: 'Aortic dissection' }
+                ],
+                correctAnswer: 'A',
+                explanation: 'Right ventricular infarction commonly complicates inferior STEMI. The combination of hypotension with clear lung fields suggests predominant RV failure rather than LV failure. The patient requires fluid loading and avoidance of nitrates/diuretics.',
+                reference: 'ESC Guidelines for STEMI 2023, Section 8.2'
+            },
+            {
+                id: 'cv2',
+                topic: 'Cardiovascular Disorders',
+                difficulty: 'Moderate',
+                type: 'A',
+                vignette: 'A 55-year-old female with severe sepsis has an arterial line placed. The waveform shows a systolic peak of 120 mmHg, dicrotic notch at 100 mmHg, and end-diastolic pressure of 80 mmHg.',
+                questionText: 'What is the most accurate interpretation of this arterial waveform?',
+                options: [
+                    { letter: 'A', text: 'Normal arterial waveform with wide pulse pressure' },
+                    { letter: 'B', text: 'Underdamped system requiring flush test' },
+                    { letter: 'C', text: 'Overdamped system with loss of high-frequency components' },
+                    { letter: 'D', text: 'Aortic regurgitation with bisferiens pulse' },
+                    { letter: 'E', text: 'Severe peripheral vasoconstriction' }
+                ],
+                correctAnswer: 'B',
+                explanation: 'The waveform shows an underdamped arterial line system characterized by systolic overshoot (artifactually high systolic) and low diastolic. The dicrotic notch appears higher than expected. A square wave test would confirm underdamping with multiple oscillations.',
+                reference: 'Textbook of Critical Care, 8th Ed, Ch. 16'
+            },
+            {
+                id: 'cv3',
+                topic: 'Cardiovascular Disorders',
+                difficulty: 'Hard',
+                type: 'K',
+                vignette: 'A 45-year-old patient with acute severe mitral regurgitation due to papillary muscle rupture post-MI is being prepared for emergency surgery.',
+                statements: {
+                    A: 'Intra-aortic balloon pump is contraindicated',
+                    B: 'Afterload reduction with nitroprusside is beneficial',
+                    C: 'Pulmonary artery catheter will show tall V waves',
+                    D: 'Surgical mortality exceeds 50%'
+                },
+                correctAnswers: { A: false, B: true, C: true, D: false },
+                explanation: 'IABP is actually beneficial in acute MR by reducing afterload and regurgitant fraction. Nitroprusside reduces afterload, improving forward flow. Tall V waves are characteristic. Contemporary surgical mortality is 20-30% with prompt intervention.',
+                reference: 'ACC/AHA Guidelines for Valvular Heart Disease 2020'
+            },
+            // Respiratory (15%)
+            {
+                id: 'resp1',
+                topic: 'Respiratory Disorders',
+                difficulty: 'Easy',
+                type: 'A',
+                vignette: 'A patient with ARDS has plateau pressure 32 cmH2O, PEEP 10 cmH2O, tidal volume 6 ml/kg PBW, and driving pressure 22 cmH2O.',
+                questionText: 'Which ventilator adjustment is most appropriate?',
+                options: [
+                    { letter: 'A', text: 'Increase tidal volume to 8 ml/kg' },
+                    { letter: 'B', text: 'Reduce tidal volume further and accept permissive hypercapnia' },
+                    { letter: 'C', text: 'Increase PEEP to recruit alveoli' },
+                    { letter: 'D', text: 'Switch to pressure control ventilation' },
+                    { letter: 'E', text: 'Initiate prone positioning immediately' }
+                ],
+                correctAnswer: 'B',
+                explanation: 'The driving pressure (plateau - PEEP = 22 cmH2O) exceeds the safe threshold of 15 cmH2O. Further tidal volume reduction with permissive hypercapnia is indicated to reduce driving pressure and prevent ventilator-induced lung injury.',
+                reference: 'ARDSNet Protocol; Amato et al. NEJM 2015'
+            },
+            {
+                id: 'resp2',
+                topic: 'Respiratory Disorders',
+                difficulty: 'Moderate',
+                type: 'A',
+                vignette: 'During weaning from mechanical ventilation, a patient develops increasing respiratory rate from 18 to 32, use of accessory muscles, and paradoxical abdominal motion.',
+                questionText: 'What is the most appropriate next step?',
+                options: [
+                    { letter: 'A', text: 'Continue weaning with increased PS level' },
+                    { letter: 'B', text: 'Return to previous ventilator settings and reassess' },
+                    { letter: 'C', text: 'Perform tracheostomy for long-term ventilation' },
+                    { letter: 'D', text: 'Administer sedation to reduce respiratory drive' },
+                    { letter: 'E', text: 'Initiate non-invasive ventilation immediately' }
+                ],
+                correctAnswer: 'B',
+                explanation: 'The patient shows signs of respiratory distress and weaning failure. The appropriate response is to return to previous settings, allow recovery, and identify the cause of failure before attempting weaning again.',
+                reference: 'ERS/ATS Weaning Guidelines 2017'
+            },
+            // Renal (10%)
+            {
+                id: 'renal1',
+                topic: 'Renal and Genitourinary Disorders',
+                difficulty: 'Easy',
+                type: 'A',
+                vignette: 'A patient on CRRT has the following settings: Blood flow 150 ml/min, Dialysate 1500 ml/hr, Replacement fluid 1500 ml/hr post-filter.',
+                questionText: 'What is the effluent flow rate?',
+                options: [
+                    { letter: 'A', text: '1500 ml/hr' },
+                    { letter: 'B', text: '3000 ml/hr' },
+                    { letter: 'C', text: '150 ml/min' },
+                    { letter: 'D', text: '3150 ml/hr' },
+                    { letter: 'E', text: '4500 ml/hr' }
+                ],
+                correctAnswer: 'B',
+                explanation: 'Effluent flow = Dialysate + Replacement fluid + Ultrafiltration. In this case: 1500 + 1500 = 3000 ml/hr (assuming minimal UF for patient weight). This represents the total volume passing through the effluent pump.',
+                reference: 'KDIGO 2024 AKI Guidelines'
+            },
+            {
+                id: 'renal2',
+                topic: 'Renal and Genitourinary Disorders',
+                difficulty: 'Hard',
+                type: 'K',
+                vignette: 'Regarding renal replacement therapy in sepsis-associated AKI:',
+                statements: {
+                    A: 'Early RRT initiation (KDIGO stage 2) improves survival compared to standard',
+                    B: 'Citrate anticoagulation is preferred over heparin in patients with liver failure',
+                    C: 'High-dose CRRT (35 ml/kg/hr) shows mortality benefit over standard dose',
+                    D: 'Extended daily dialysis provides equivalent outcomes to CRRT'
+                },
+                correctAnswers: { A: false, B: false, C: false, D: true },
+                explanation: 'STARRT-AKI and AKIKI trials showed no benefit of early RRT. Citrate is contraindicated in liver failure due to accumulation. RENAL trial showed no benefit of high dose. Extended daily dialysis is an acceptable alternative to CRRT.',
+                reference: 'STARRT-AKI NEJM 2020; RENAL Trial NEJM 2009'
+            },
+            // Neurological (15%)
+            {
+                id: 'neuro1',
+                topic: 'Neurological Disorders',
+                difficulty: 'Moderate',
+                type: 'A',
+                vignette: 'A 28-year-old patient with severe TBI has ICP 25 mmHg, CPP 55 mmHg, and SjO2 45%. Hemoglobin is 12 g/dL, PaCO2 35 mmHg.',
+                questionText: 'What is the most appropriate intervention?',
+                options: [
+                    { letter: 'A', text: 'Hyperventilate to PaCO2 25 mmHg' },
+                    { letter: 'B', text: 'Transfuse 2 units PRBC to improve oxygen delivery' },
+                    { letter: 'C', text: 'Increase MAP with vasopressors to improve CPP' },
+                    { letter: 'D', text: 'Administer mannitol 1 g/kg' },
+                    { letter: 'E', text: 'Initiate therapeutic hypothermia' }
+                ],
+                correctAnswer: 'C',
+                explanation: 'Low SjO2 indicates cerebral hypoperfusion. CPP of 55 is at the lower limit of acceptable. Increasing MAP to achieve CPP 60-70 mmHg is indicated before other interventions. Hyperventilation is reserved for acute herniation.',
+                reference: 'Brain Trauma Foundation Guidelines 4th Ed'
+            },
+            // Infections (20%)
+            {
+                id: 'inf1',
+                topic: 'Infections',
+                difficulty: 'Easy',
+                type: 'A',
+                vignette: 'A patient with septic shock has received 30 ml/kg crystalloid. MAP remains 55 mmHg despite norepinephrine 0.5 mcg/kg/min.',
+                questionText: 'What is the next appropriate step?',
+                options: [
+                    { letter: 'A', text: 'Add vasopressin 0.03 units/min' },
+                    { letter: 'B', text: 'Give additional 30 ml/kg fluid bolus' },
+                    { letter: 'C', text: 'Start hydrocortisone 50 mg IV q6h' },
+                    { letter: 'D', text: 'Initiate dobutamine for inotropic support' },
+                    { letter: 'E', text: 'Switch to epinephrine' }
+                ],
+                correctAnswer: 'A',
+                explanation: 'Per Surviving Sepsis Guidelines, add vasopressin up to 0.03 U/min (or terlipressin/epinephrine) to norepinephrine rather than escalating catecholamine dose alone. Corticosteroids are considered if fluid and vasopressors fail.',
+                reference: 'Surviving Sepsis Campaign 2021'
+            },
+            {
+                id: 'inf2',
+                topic: 'Infections',
+                difficulty: 'Hard',
+                type: 'A',
+                vignette: 'A patient with VAP has cultures growing Pseudomonas aeruginosa resistant to piperacillin-tazobactam but sensitive to cefepime, meropenem, and amikacin.',
+                questionText: 'What is the most appropriate antibiotic regimen?',
+                options: [
+                    { letter: 'A', text: 'Cefepime monotherapy' },
+                    { letter: 'B', text: 'Meropenem monotherapy' },
+                    { letter: 'C', text: 'Cefepime plus amikacin' },
+                    { letter: 'D', text: 'Meropenem plus amikacin' },
+                    { letter: 'E', text: 'Colistin plus meropenem' }
+                ],
+                correctAnswer: 'D',
+                explanation: 'For MDR Pseudomonas, combination therapy with two different classes is recommended to prevent resistance and improve outcomes. Meropenem (carbapenem) plus amikacin (aminoglycoside) provides synergistic activity.',
+                reference: 'IDSA HAP/VAP Guidelines 2016'
+            },
+            // GI/Hepatic (10%)
+            {
+                id: 'gi1',
+                topic: 'Gastrointestinal Disorders',
+                difficulty: 'Moderate',
+                type: 'A',
+                vignette: 'A patient with acute pancreatitis (BISAP score 3) develops increasing abdominal distension, oliguria, and peak airway pressures rising from 20 to 35 cmH2O.',
+                questionText: 'What is the most likely complication?',
+                options: [
+                    { letter: 'A', text: 'Acute colonic pseudo-obstruction (Ogilvie syndrome)' },
+                    { letter: 'B', text: 'Abdominal compartment syndrome' },
+                    { letter: 'C', text: 'Severe ileus from opioid use' },
+                    { letter: 'D', text: 'Hemorrhagic pancreatitis with retroperitoneal bleed' },
+                    { letter: 'E', text: 'Mesenteric ischemia' }
+                ],
+                correctAnswer: 'B',
+                explanation: 'The triad of abdominal distension, oliguria, and elevated airway pressures suggests abdominal compartment syndrome. IAP should be measured. Decompressive laparotomy may be required if IAP > 20 mmHg with organ dysfunction.',
+                reference: 'WSACS Guidelines 2013'
+            },
+            // Practical Procedures (10%)
+            {
+                id: 'proc1',
+                topic: 'Practical Procedures',
+                difficulty: 'Easy',
+                type: 'A',
+                vignette: 'During central venous catheter insertion via the internal jugular approach, the guidewire passes easily but resistance is met when advancing the dilator.',
+                questionText: 'What is the most appropriate action?',
+                options: [
+                    { letter: 'A', text: 'Apply firm steady pressure to advance the dilator' },
+                    { letter: 'B', text: 'Remove dilator and try larger size' },
+                    { letter: 'C', text: 'Remove dilator and guidewire, reattempt puncture' },
+                    { letter: 'D', text: 'Advance guidewire further then retry dilator' },
+                    { letter: 'E', text: 'Use scalpel to enlarge skin entry site' }
+                ],
+                correctAnswer: 'E',
+                explanation: 'Resistance to dilator advancement usually indicates inadequate skin incision. A scalpel should be used to enlarge the skin entry site (not just a stab incision) to allow smooth dilator passage without kinking the wire.',
+                reference: 'CVC Insertion Guidelines (SIR/ASA)'
+            },
+            {
+                id: 'proc2',
+                topic: 'Practical Procedures',
+                difficulty: 'Moderate',
+                type: 'K',
+                vignette: 'Regarding ultrasound-guided CVC insertion:',
+                statements: {
+                    A: 'Dynamic needle guidance reduces arterial puncture compared to static marking',
+                    B: 'Compression ultrasonography reliably differentiates artery from vein',
+                    C: 'Trendelenburg position increases IJ vein diameter by 50%',
+                    D: 'Real-time ultrasound is mandatory for IJ approach per guidelines'
+                },
+                correctAnswers: { A: true, B: true, C: false, D: false },
+                explanation: 'Dynamic guidance and compression US both improve safety. Trendelenburg increases diameter by ~25%, not 50%. While US is strongly recommended for IJ, it is not mandatory (though it is for femoral/subclavian in some guidelines).',
+                reference: 'NICE Guidelines UK; SIR Consensus'
+            },
+            // Patient General Care (10%)
+            {
+                id: 'care1',
+                topic: 'Patient General Care',
+                difficulty: 'Easy',
+                type: 'A',
+                vignette: 'An intubated patient receiving enteral nutrition develops gastric residual volume of 400 ml after 4 hours.',
+                questionText: 'What is the most appropriate management?',
+                options: [
+                    { letter: 'A', text: 'Stop enteral nutrition immediately' },
+                    { letter: 'B', text: 'Continue feeding and administer prokinetics' },
+                    { letter: 'C', text: 'Reduce feeding rate by 50%' },
+                    { letter: 'D', text: 'Switch to parenteral nutrition' },
+                    { letter: 'E', text: 'Elevate head of bed to 45 degrees and continue' }
+                ],
+                correctAnswer: 'E',
+                explanation: 'Current guidelines de-emphasize routine GRV checks. Elevate HOB to 30-45°, continue feeding unless >500ml or patient shows intolerance signs (vomiting, distension). Prokinetics are second-line.',
+                reference: 'ASPEN/SCCM Guidelines 2016; ESPEN 2019'
+            }
+        ];
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            setupFileUpload();
+        });
+
+        // Real PDF Text Extraction
+        async function extractTextFromPDF(arrayBuffer) {
+            try {
+                const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+                const totalPages = pdf.numPages;
+                extractedTextByPage = [];
+                let fullText = '';
+                
+                for (let i = 1; i <= totalPages; i++) {
+                    const page = await pdf.getPage(i);
+                    const textContent = await page.getTextContent();
+                    const pageText = textContent.items.map(item => item.str).join(' ');
+                    extractedTextByPage.push(pageText);
+                    fullText += pageText + ' ';
+                    
+                    // Update progress
+                    const progress = (i / totalPages) * 100;
+                    document.getElementById('extractionBar').style.width = `${progress}%`;
+                    document.getElementById('extractionStatus').textContent = `Page ${i} of ${totalPages}`;
+                    await new Promise(resolve => setTimeout(resolve, 50)); // Small delay for UI update
+                }
+                
+                pdfMetadata = {
+                    totalPages: totalPages,
+                    title: pdf._pdfInfo?.title || 'Unknown',
+                    author: pdf._pdfInfo?.author || 'Unknown'
+                };
+                
+                return fullText.trim();
+            } catch (error) {
+                console.error('PDF extraction error:', error);
+                throw new Error('Failed to extract text from PDF. Please ensure the file is not corrupted or password protected.');
+            }
+        }
+
+        // File Upload Setup
+        function setupFileUpload() {
+            const dropzone = document.getElementById('dropzone');
+            const fileInput = document.getElementById('fileInput');
+
+            dropzone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                if (!dropzone.classList.contains('processing')) {
+                    dropzone.classList.add('dragover');
+                }
+            });
+
+            dropzone.addEventListener('dragleave', () => {
+                dropzone.classList.remove('dragover');
+            });
+
+            dropzone.addEventListener('drop', async (e) => {
+                e.preventDefault();
+                dropzone.classList.remove('dragover');
+                const file = e.dataTransfer.files[0];
+                if (file) await handleFile(file);
+            });
+
+            fileInput.addEventListener('change', async (e) => {
+                const file = e.target.files[0];
+                if (file) await handleFile(file);
+            });
+        }
+
+        // Handle File with Real Extraction
+        async function handleFile(file) {
+            if (file.type !== 'application/pdf') {
+                showError('Please upload a valid PDF file.');
+                return;
+            }
+
+            if (file.size > 50 * 1024 * 1024) {
+                showError('File size exceeds 50MB limit.');
+                return;
+            }
+
+            fileName = file.name;
+            const dropzone = document.getElementById('dropzone');
+            const uploadBtn = document.getElementById('uploadBtn');
+            const progressDiv = document.getElementById('extractionProgress');
+            
+            // UI Updates
+            dropzone.classList.add('processing');
+            uploadBtn.innerHTML = '<div class="spinner spinner-small"></div> Processing...';
+            progressDiv.classList.remove('hidden');
+            hideError();
+
+            try {
+                const arrayBuffer = await file.arrayBuffer();
+                pdfText = await extractTextFromPDF(arrayBuffer);
+                
+                // Success - move to difficulty selection
+                document.getElementById('fileName').textContent = fileName;
+                document.getElementById('pdfStats').textContent = 
+                    `${pdfMetadata.totalPages} pages extracted • ${Math.round(pdfText.length / 1000)}K characters`;
+                
+                setTimeout(() => {
+                    showScreen('difficultyScreen');
+                    resetUploadUI();
+                }, 500);
+                
+            } catch (error) {
+                showError(error.message);
+                resetUploadUI();
+            }
+        }
+
+        function resetUploadUI() {
+            const dropzone = document.getElementById('dropzone');
+            const uploadBtn = document.getElementById('uploadBtn');
+            const progressDiv = document.getElementById('extractionProgress');
+            
+            dropzone.classList.remove('processing');
+            uploadBtn.innerHTML = '📄 Choose File';
+            progressDiv.classList.add('hidden');
+            document.getElementById('extractionBar').style.width = '0%';
+            document.getElementById('extractionStatus').textContent = 'Page 0 of 0';
+        }
+
+        function resetUpload() {
+            pdfText = '';
+            fileName = '';
+            extractedTextByPage = [];
+            document.getElementById('fileInput').value = '';
+            showScreen('uploadScreen');
+        }
+
+        // Difficulty Selection
+        function selectDifficulty(level) {
+            difficulty = level;
+            
+            // Visual feedback
+            document.querySelectorAll('.difficulty-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            document.getElementById(`card-${level}`).classList.add('selected');
+            
+            // Small delay for visual feedback
+            setTimeout(() => {
+                showScreen('loadingScreen');
+                generateQuiz();
+            }, 300);
+        }
+
+        // Smart Question Generation
+        function generateQuiz() {
+            // Simulate generation progress
+            let progress = 0;
+            const progressBar = document.getElementById('generationBar');
+            const loadingText = document.getElementById('loadingText');
+            
+            const progressInterval = setInterval(() => {
+                progress += Math.random() * 15;
+                if (progress > 90) progress = 90;
+                progressBar.style.width = `${progress}%`;
+            }, 200);
+
+            // Generate questions based on difficulty
+            setTimeout(() => {
+                clearInterval(progressInterval);
+                progressBar.style.width = '100%';
+                
+                questions = selectQuestionsByDifficulty(difficulty);
+                loadingText.textContent = 'Finalizing quiz...';
+                
+                setTimeout(() => {
+                    showScreen('quizScreen');
+                    displayQuestion();
+                }, 500);
+            }, 2000);
+        }
+
+        function selectQuestionsByDifficulty(level) {
+            let selectedQuestions = [];
+            const shuffled = [...questionBank].sort(() => 0.5 - Math.random());
+            
+            // Calculate distribution
+            let easyCount, moderateCount, hardCount;
+            
+            switch(level) {
+                case 'easy':
+                    easyCount = 30; moderateCount = 0; hardCount = 0;
+                    break;
+                case 'moderate':
+                    easyCount = 0; moderateCount = 30; hardCount = 0;
+                    break;
+                case 'hard':
+                    easyCount = 0; moderateCount = 0; hardCount = 30;
+                    break;
+                case 'mixed':
+                default:
+                    easyCount = 6; moderateCount = 15; hardCount = 9;
+                    break;
+            }
+            
+            // Select questions ensuring topic diversity
+            const topics = [...new Set(questionBank.map(q => q.topic))];
+            const questionsByTopic = {};
+            
+            topics.forEach(topic => {
+                questionsByTopic[topic] = shuffled.filter(q => q.topic === q.topic);
+            });
+            
+            // Fill by difficulty
+            const easyQ = shuffled.filter(q => q.difficulty === 'Easy');
+            const moderateQ = shuffled.filter(q => q.difficulty === 'Moderate');
+            const hardQ = shuffled.filter(q => q.difficulty === 'Hard');
+            
+            // Add questions ensuring we don't duplicate
+            selectedQuestions = [
+                ...easyQ.slice(0, easyCount),
+                ...moderateQ.slice(0, moderateCount),
+                ...hardQ.slice(0, hardCount)
+            ];
+            
+            // If we don't have enough, fill with available questions
+            while (selectedQuestions.length < 30) {
+                const remaining = shuffled.filter(q => !selectedQuestions.includes(q));
+                if (remaining.length === 0) break;
+                selectedQuestions.push(remaining[0]);
+            }
+            
+            // Shuffle final selection
+            selectedQuestions = selectedQuestions.sort(() => 0.5 - Math.random());
+            
+            // Assign numbers and ensure unique IDs
+            return selectedQuestions.slice(0, 30).map((q, index) => ({
+                ...q,
+                number: index + 1,
+                uniqueId: `${q.id}_${index}`
+            }));
+        }
+
+        // Display Question
+        function displayQuestion() {
+            const question = questions[currentQuestionIndex];
+            const questionCard = document.getElementById('questionCard');
+
+            document.getElementById('currentQ').textContent = currentQuestionIndex + 1;
+            document.getElementById('progressBar').style.width = `${((currentQuestionIndex + 1) / 30) * 100}%`;
+
+            // Build options HTML
+            let optionsHTML = '';
+            if (question.type === 'A') {
+                optionsHTML = question.options.map(opt => `
+                    <button class="option-button" onclick="selectAnswer('${opt.letter}')" data-letter="${opt.letter}">
+                        <span class="option-letter">${opt.letter})</span>
+                        <span class="option-text">${opt.text}</span>
+                    </button>
+                `).join('');
+            } else if (question.type === 'K') {
+                // Type K questions have True/False for each statement
+                optionsHTML = Object.entries(question.statements).map(([key, text]) => `
+                    <div style="margin: 1rem 0; padding: 1rem; background: #f8fafc; border-radius: 0.5rem;">
+                        <p style="font-weight: 600; margin-bottom: 0.5rem;">${key}) ${text}</p>
+                        <div style="display: flex; gap: 1rem;">
+                            <button class="option-button" onclick="selectKAnswer('${key}', true)" style="flex: 1;" data-k="${key}" data-value="true">
+                                <span class="option-letter">T</span>
+                                <span>True</span>
+                            </button>
+                            <button class="option-button" onclick="selectKAnswer('${key}', false)" style="flex: 1;" data-k="${key}" data-value="false">
+                                <span class="option-letter">F</span>
+                                <span>False</span>
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            questionCard.innerHTML = `
+                <div class="question-header">
+                    <div>
+                        <span class="badge ${question.difficulty.toLowerCase()}">${question.difficulty}</span>
+                        <span class="badge" style="background: #e0f2fe; color: var(--color-primary-blue); margin-left: 0.5rem;">
+                            Type ${question.type}
+                        </span>
+                    </div>
+                    <span style="font-weight: 600; color: var(--color-neutral);">Question ${question.number} of 30</span>
+                </div>
+
+                <div style="margin-bottom: 1rem;">
+                    <span class="topic-tag">${question.topic}</span>
+                </div>
+
+                <div class="clinical-vignette">
+                    <p>${question.vignette}</p>
+                </div>
+
+                <div class="question-stem">
+                    ${question.questionText}
+                </div>
+
+                <div class="answer-options" id="optionsContainer">
+                    ${optionsHTML}
+                </div>
+
+                <button id="submitBtn" class="btn btn-primary" style="width: 100%; margin-top: 1.5rem;" disabled onclick="submitAnswer()">
+                    Submit Answer
+                </button>
+            `;
+
+            // Reset selected answer(s)
+            selectedAnswer = question.type === 'A' ? null : {};
+        }
+
+        // Select Answer (Type A)
+        let selectedAnswer = null;
+        function selectAnswer(letter) {
+            selectedAnswer = letter;
+            
+            document.querySelectorAll('.option-button').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            
+            const selectedBtn = document.querySelector(`[data-letter="${letter}"]`);
+            if (selectedBtn) {
+                selectedBtn.classList.add('selected');
+            }
+            
+            document.getElementById('submitBtn').disabled = false;
+        }
+
+        // Select Answer (Type K)
+        function selectKAnswer(statement, value) {
+            if (!selectedAnswer) selectedAnswer = {};
+            selectedAnswer[statement] = value;
+            
+            // Update UI for this statement
+            const buttons = document.querySelectorAll(`[data-k="${statement}"]`);
+            buttons.forEach(btn => {
+                btn.classList.remove('selected');
+                if (btn.dataset.value === value.toString()) {
+                    btn.classList.add('selected');
+                }
+            });
+            
+            // Enable submit if all statements answered
+            const totalStatements = Object.keys(questions[currentQuestionIndex].statements).length;
+            if (Object.keys(selectedAnswer).length === totalStatements) {
+                document.getElementById('submitBtn').disabled = false;
+            }
+        }
+
+        // Submit Answer
+        function submitAnswer() {
+            const question = questions[currentQuestionIndex];
+            let isCorrect = false;
+            
+            if (question.type === 'A') {
+                isCorrect = selectedAnswer === question.correctAnswer;
+            } else if (question.type === 'K') {
+                isCorrect = Object.entries(question.correctAnswers).every(
+                    ([key, value]) => selectedAnswer[key] === value
+                );
+            }
+            
+            if (isCorrect) {
+                score++;
+            } else {
+                failedQuestions.push({
+                    ...question,
+                    userAnswer: selectedAnswer
+                });
+            }
+
+            userAnswers[currentQuestionIndex] = {
+                selected: selectedAnswer,
+                correct: isCorrect,
+                timestamp: new Date().toISOString()
+            };
+
+            document.getElementById('scoreDisplay').textContent = score;
+
+            // Disable all options
+            document.querySelectorAll('.option-button').forEach(btn => {
+                btn.classList.add('disabled');
+                btn.onclick = null;
+            });
+            document.getElementById('submitBtn').remove();
+
+            // Show feedback
+            showFeedback(question, isCorrect);
+        }
+
+        // Show Feedback
+        function showFeedback(question, isCorrect) {
+            const questionCard = document.getElementById('questionCard');
+            
+            let answerDisplay = '';
+            if (question.type === 'A') {
+                answerDisplay = `
+                    <p><strong>Your Answer:</strong> ${selectedAnswer}</p>
+                    <p><strong>Correct Answer:</strong> ${question.correctAnswer}</p>
+                `;
+            } else if (question.type === 'K') {
+                const userAnswersStr = Object.entries(selectedAnswer || {})
+                    .map(([k, v]) => `${k}:${v ? 'T' : 'F'}`).join(', ');
+                const correctAnswersStr = Object.entries(question.correctAnswers)
+                    .map(([k, v]) => `${k}:${v ? 'T' : 'F'}`).join(', ');
+                answerDisplay = `
+                    <p><strong>Your Answers:</strong> ${userAnswersStr}</p>
+                    <p><strong>Correct:</strong> ${correctAnswersStr}</p>
+                `;
+            }
+            
+            const feedbackHTML = `
+                <div class="feedback-panel ${isCorrect ? 'correct' : 'incorrect'}">
+                    <div class="feedback-header">
+                        <div class="feedback-icon">${isCorrect ? '✓' : '✗'}</div>
+                        <h3 class="feedback-title">${isCorrect ? 'Correct!' : 'Incorrect'}</h3>
+                    </div>
+
+                    <div style="margin: 1rem 0; padding: 1rem; background: white; border-radius: 0.5rem;">
+                        ${answerDisplay}
+                    </div>
+
+                    <div class="explanation-section">
+                        <h4 style="margin-bottom: 1rem;">📖 Explanation</h4>
+                        <p>${question.explanation}</p>
+                        <p style="margin-top: 1rem; font-size: 0.875rem; color: var(--color-neutral);">
+                            <strong>Reference:</strong> ${question.reference}
+                        </p>
+                    </div>
+
+                    <button class="btn btn-primary" style="width: 100%; margin-top: 1.5rem;" onclick="nextQuestion()">
+                        ${currentQuestionIndex < 29 ? 'Next Question →' : 'View Results'}
+                    </button>
+                </div>
+            `;
+
+            questionCard.insertAdjacentHTML('beforeend', feedbackHTML);
+        }
+
+        // Next Question
+        function nextQuestion() {
+            selectedAnswer = null;
+            currentQuestionIndex++;
+            
+            if (currentQuestionIndex < 30) {
+                displayQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        // Show Results
+        function showResults() {
+            showScreen('resultsScreen');
+            const percentage = Math.round((score / 30) * 100);
+            const passed = score >= 21; // 70% pass mark
+
+            // Calculate statistics by difficulty
+            const statsByDifficulty = { Easy: 0, Moderate: 0, Hard: 0 };
+            const totalByDifficulty = { Easy: 0, Moderate: 0, Hard: 0 };
+            
+            questions.forEach((q, idx) => {
+                totalByDifficulty[q.difficulty]++;
+                if (userAnswers[idx]?.correct) {
+                    statsByDifficulty[q.difficulty]++;
+                }
+            });
+
+            const resultsHTML = `
+                <div class="glass-effect animate-fade-in" style="padding: 3rem; text-align: center;">
+                    <div style="font-size: 4rem; margin-bottom: 1rem;">${passed ? '🏆' : '📚'}</div>
+                    <h1 style="font-size: 2.5rem; margin-bottom: 1rem;">${passed ? 'Mastery Achieved!' : 'Review Recommended'}</h1>
+                    <div style="font-size: 4rem; font-weight: 700; color: var(--color-primary-blue); margin: 1rem 0;">
+                        ${percentage}%
+                    </div>
+                    <p style="font-size: 1.25rem; color: var(--color-neutral);">
+                        You scored ${score} out of 30 questions correctly
+                    </p>
+
+                    <div style="display: inline-block; padding: 1rem 2rem; margin-top: 1rem; border-radius: 2rem; background: ${passed ? 'var(--color-success)' : 'var(--color-warning)'}; color: white; font-weight: 700;">
+                        ${passed ? '✓ PASS (≥70%)' : '⚠ BELOW PASSING (Need 21/30)'}
+                    </div>
+                </div>
+
+                <div class="stats-grid animate-slide-up">
+                    <div class="stat-card">
+                        <div class="stat-value">${statsByDifficulty.Easy}/${totalByDifficulty.Easy}</div>
+                        <div class="stat-label">Easy Correct</div>
+                        <div class="progress-bar-container" style="margin-top: 0.5rem;">
+                            <div class="progress-bar-fill" style="width: ${(statsByDifficulty.Easy/totalByDifficulty.Easy)*100}%; background: var(--color-easy);"></div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${statsByDifficulty.Moderate}/${totalByDifficulty.Moderate}</div>
+                        <div class="stat-label">Moderate Correct</div>
+                        <div class="progress-bar-container" style="margin-top: 0.5rem;">
+                            <div class="progress-bar-fill" style="width: ${(statsByDifficulty.Moderate/totalByDifficulty.Moderate)*100}%; background: var(--color-moderate);"></div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${statsByDifficulty.Hard}/${totalByDifficulty.Hard}</div>
+                        <div class="stat-label">Hard Correct</div>
+                        <div class="progress-bar-container" style="margin-top: 0.5rem;">
+                            <div class="progress-bar-fill" style="width: ${(statsByDifficulty.Hard/totalByDifficulty.Hard)*100}%; background: var(--color-hard);"></div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${failedQuestions.length}</div>
+                        <div class="stat-label">Need Review</div>
+                    </div>
+                </div>
+
+                ${failedQuestions.length > 0 ? `
+                    <div class="export-failed-section glass-effect animate-slide-up" style="margin-top: 2rem;">
+                        <div class="export-header">
+                            <div class="export-icon" style="font-size: 2rem;">⚠️</div>
+                            <div>
+                                <h3>Questions Requiring Review</h3>
+                                <p style="color: var(--color-neutral);">You answered ${failedQuestions.length} question${failedQuestions.length !== 1 ? 's' : ''} incorrectly</p>
+                            </div>
+                        </div>
+
+                        <div class="review-list">
+                            ${failedQuestions.map((q, idx) => `
+                                <div class="review-item" onclick="showReviewDetail(${idx})">
+                                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                                        <span>
+                                            <span class="badge ${q.difficulty.toLowerCase()}" style="font-size: 0.75rem; margin-right: 0.5rem;">${q.difficulty}</span>
+                                            <strong>Q${q.number}:</strong> ${q.topic}
+                                        </span>
+                                        <span style="color: var(--color-error);">✗</span>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+
+                        <p style="margin: 1rem 0; padding: 1rem; background: #fef3c7; border-radius: 0.5rem;">
+                            💡 Export these questions to your hard drive for focused review
+                        </p>
+
+                        <button class="btn-export-primary" onclick="exportFailedQuestions()">
+                            💾 Save Failed Questions to Hard Drive
+                        </button>
+
+                        <div class="export-format-options">
+                            <label class="format-option">
+                                <input type="radio" name="format" value="markdown" checked>
+                                <span>Markdown (.md)</span>
+                            </label>
+                            <label class="format-option">
+                                <input type="radio" name="format" value="json">
+                                <span>JSON (.json)</span>
+                            </label>
+                            <label class="format-option">
+                                <input type="radio" name="format" value="txt">
+                                <span>Plain Text (.txt)</span>
+                            </label>
+                        </div>
+                    </div>
+                ` : '<div class="success-message" style="margin-top: 2rem;">🎉 Perfect score! No questions to review.</div>'}
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 2rem;">
+                    <button class="btn btn-primary" onclick="retakeQuiz()">
+                        🔄 Retake Quiz
+                    </button>
+                    <button class="btn btn-secondary" onclick="resetUpload()">
+                        📤 Upload New Material
+                    </button>
+                </div>
+            `;
+
+            document.getElementById('resultsScreen').innerHTML = resultsHTML;
+        }
+
+        function showReviewDetail(index) {
+            const q = failedQuestions[index];
+            alert(`Question ${q.number} (${q.difficulty})\n\n${q.vignette}\n\n${q.questionText}\n\nCorrect Answer: ${q.type === 'A' ? q.correctAnswer : JSON.stringify(q.correctAnswers)}\n\nYour Answer: ${JSON.stringify(q.userAnswer)}`);
+        }
+
+        function retakeQuiz() {
+            currentQuestionIndex = 0;
+            score = 0;
+            userAnswers = [];
+            failedQuestions = [];
+            selectedAnswer = null;
+            
+            // Reshuffle questions
+            questions = selectQuestionsByDifficulty(difficulty);
+            
+            document.getElementById('scoreDisplay').textContent = '0';
+            showScreen('quizScreen');
+            displayQuestion();
+        }
+
+        // Export Failed Questions
+        function exportFailedQuestions() {
+            const format = document.querySelector('input[name="format"]:checked').value;
+            const timestamp = new Date().toISOString().split('T')[0];
+            const timeStr = new Date().toTimeString().split(' ')[0].replace(/:/g, '-');
+            const fileName = `EDIC_Failed_Questions_${timestamp}_${timeStr}.${format === 'markdown' ? 'md' : format === 'json' ? 'json' : 'txt'}`;
+
+            let content = '';
+
+            if (format === 'markdown') {
+                content = `# EDIC Quiz - Failed Questions Review\n\n`;
+                content += `**Export Date:** ${new Date().toLocaleString()}\n`;
+                content += `**Total Failed:** ${failedQuestions.length}/30\n`;
+                content += `**Score:** ${score}/30 (${Math.round((score/30)*100)}%)\n`;
+                content += `**Difficulty Level:** ${difficulty}\n\n---\n\n`;
+
+                failedQuestions.forEach((q, index) => {
+                    content += `## Question ${q.number} [${q.difficulty}]\n\n`;
+                    content += `**Topic:** ${q.topic}  \n`;
+                    content += `**Type:** ${q.type}\n\n`;
+                    content += `### Scenario\n${q.vignette}\n\n`;
+                    content += `### Question\n${q.questionText}\n\n`;
+                    
+                    if (q.type === 'A') {
+                        content += `### Options\n`;
+                        q.options.forEach(opt => {
+                            const marker = opt.letter === q.correctAnswer ? ' ✓' : '';
+                            content += `${opt.letter}) ${opt.text}${marker}\n`;
+                        });
+                        content += `\n**Your Answer:** ${q.userAnswer}\n`;
+                        content += `**Correct Answer:** ${q.correctAnswer}\n\n`;
+                    } else if (q.type === 'K') {
+                        content += `### Statements & Answers\n`;
+                        Object.entries(q.statements).forEach(([key, text]) => {
+                            const correct = q.correctAnswers[key] ? 'True' : 'False';
+                            const user = q.userAnswer?.[key] ? 'True' : 'False';
+                            const mark = q.userAnswer?.[key] === q.correctAnswers[key] ? '✓' : '✗';
+                            content += `${key}) ${text}\n- Correct: ${correct} | Your answer: ${user} ${mark}\n\n`;
+                        });
+                    }
+                    
+                    content += `### Explanation\n${q.explanation}\n\n`;
+                    content += `### Reference\n${q.reference}\n\n---\n\n`;
+                });
+                
+                content += `\n## Study Recommendations\n\nBased on your performance, focus on these topics:\n`;
+                const topicCounts = {};
+                failedQuestions.forEach(q => {
+                    topicCounts[q.topic] = (topicCounts[q.topic] || 0) + 1;
+                });
+                Object.entries(topicCounts)
+                    .sort((a, b) => b[1] - a[1])
+                    .forEach(([topic, count]) => {
+                        content += `- **${topic}**: ${count} question${count > 1 ? 's' : ''} missed\n`;
+                    });
+                    
+            } else if (format === 'json') {
+                content = JSON.stringify({
+                    exportMetadata: {
+                        date: new Date().toISOString(),
+                        totalQuestions: 30,
+                        score: score,
+                        percentage: Math.round((score/30)*100),
+                        difficulty: difficulty,
+                        passed: score >= 21
+                    },
+                    failedQuestions: failedQuestions.map(q => ({
+                        number: q.number,
+                        topic: q.topic,
+                        difficulty: q.difficulty,
+                        type: q.type,
+                        vignette: q.vignette,
+                        question: q.questionText,
+                        userAnswer: q.userAnswer,
+                        correctAnswer: q.type === 'A' ? q.correctAnswer : q.correctAnswers,
+                        explanation: q.explanation,
+                        reference: q.reference
+                    }))
+                }, null, 2);
+            } else {
+                // Plain text format
+                content = `EDIC QUIZ REVIEW - ${new Date().toLocaleString()}\n`;
+                content += `Score: ${score}/30 (${Math.round((score/30)*100)}%)\n`;
+                content += `Failed: ${failedQuestions.length} questions\n\n`;
+                content += `=${'='.repeat(60)}\n\n`;
+                
+                failedQuestions.forEach((q, idx) => {
+                    content += `QUESTION ${q.number} [${q.difficulty}] - ${q.topic}\n`;
+                    content += `Type: ${q.type}\n\n`;
+                    content += `SCENARIO:\n${q.vignette}\n\n`;
+                    content += `QUESTION:\n${q.questionText}\n\n`;
+                    
+                    if (q.type === 'A') {
+                        content += `OPTIONS:\n`;
+                        q.options.forEach(opt => {
+                            content += `${opt.letter}) ${opt.text}\n`;
+                        });
+                        content += `\nYour answer: ${q.userAnswer}\n`;
+                        content += `Correct answer: ${q.correctAnswer}\n`;
+                    }
+                    
+                    content += `\nEXPLANATION:\n${q.explanation}\n`;
+                    content += `Reference: ${q.reference}\n`;
+                    content += `\n${'-'.repeat(60)}\n\n`;
+                });
+            }
+
+            // Download file
+            const blob = new Blob([content], { 
+                type: format === 'markdown' ? 'text/markdown' : 
+                      format === 'json' ? 'application/json' : 'text/plain' 
+            });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            // Show success message
+            const btn = document.querySelector('.btn-export-primary');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '✓ Saved Successfully!';
+            btn.style.background = 'var(--color-success)';
+            setTimeout(() => {
+                btn.innerHTML = originalText;
+                btn.style.background = '';
+            }, 3000);
+        }
+
+        // Utility Functions
+        function showScreen(screenId) {
+            const screens = ['uploadScreen', 'difficultyScreen', 'loadingScreen', 'quizScreen', 'resultsScreen'];
+            screens.forEach(id => {
+                document.getElementById(id).classList.add('hidden');
+            });
+            document.getElementById(screenId).classList.remove('hidden');
+            window.scrollTo(0, 0);
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('uploadError');
+            errorDiv.textContent = message;
+            errorDiv.classList.remove('hidden');
+            setTimeout(() => {
+                errorDiv.classList.add('hidden');
+            }, 5000);
+        }
+
+        function hideError() {
+            document.getElementById('uploadError').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
